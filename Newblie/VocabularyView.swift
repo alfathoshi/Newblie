@@ -14,8 +14,8 @@ struct VocabularyView: View {
         NavigationStack{
             ZStack {
                 Color(.systemGroupedBackground)
-                        .ignoresSafeArea()
-
+                    .ignoresSafeArea()
+                
                 
                 ForEach(Array(vocabs.prefix(3).enumerated()), id: \.element.id) { index, vocab in
                     
@@ -30,7 +30,7 @@ struct VocabularyView: View {
                         .rotationEffect(.degrees(index == 0 ? Double(dragOffset.width / 20) : 0))
                     
                         .zIndex(Double(vocabs.count - index))
-                
+                    
                     
                         .gesture(
                             index == 0 ?
@@ -59,7 +59,7 @@ struct VocabularyView: View {
             }
             .animation(.spring(), value: vocabs)
             .navigationTitle("Newblie")
-                .navigationSubtitle("Learn more about Bali Language")
+            .navigationSubtitle("Learn more about Bali Language")
         }
     }
     func moveCardToBack() {
