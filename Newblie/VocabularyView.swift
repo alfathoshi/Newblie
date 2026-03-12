@@ -10,11 +10,13 @@ import SwiftData
 
 struct VocabularyView: View {
     
-    @Query var vocabs: [Vocabulary]
-    
     @State private var cardStack: [Vocabulary] = []
     @State private var dragOffset: CGSize = .zero
+    @State private var currentIndex = 0
     
+    
+    @Environment(\.modelContext) var context
+    @Query var vocabs: [Vocabulary]
     var body: some View {
         
         let visibleCards = Array(cardStack.prefix(3).enumerated())
@@ -33,22 +35,33 @@ struct VocabularyView: View {
                 } else {
                     
                     ForEach(visibleCards, id: \.element.id) { index, vocab in
-                        
+                        let lastIndex = visibleCards.count - 1
                         VocabularyCard(vocab: vocab)
                         
-                            .scaleEffect(1 - CGFloat(index) * 0.05)
-                            
+                            .scaleEffect(
+                                dragOffset.width > 0 && index == 2
+                                ? 1 - CGFloat(index) * 0.05 + 0.05
+                                : 1 - CGFloat(index) * 0.05
+                            )
+                        
                             .offset(
-                                x: index == 0 ? dragOffset.width : 0,
+                                x:
+                                    dragOffset.width < 0
+                                    ? (index == 0 ? dragOffset.width : 0)
+                                    : (index == lastIndex ? dragOffset.width : 0),
                                 y: CGFloat(index) * -36
                             )
-                            
+                        
                             .rotationEffect(
-                                .degrees(index == 0 ? Double(dragOffset.width / 20) : 0)
+                                .degrees(
+                                    dragOffset.width < 0
+                                    ? (index == 0 ? Double(dragOffset.width / 20) : 0)
+                                    : (index == lastIndex ? Double(dragOffset.width / 20) : 0)
+                                )
                             )
-                            
+                        
                             .zIndex(Double(3 - index))
-                            
+                        
                             .gesture(
                                 index == 0 ?
                                 DragGesture()
@@ -59,11 +72,21 @@ struct VocabularyView: View {
                                         
                                         if abs(value.translation.width) > 120 {
                                             
-                                            dragOffset.width = value.translation.width > 0 ? 1000 : -1000
-                                            
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                                moveCardToBack()
-                                                dragOffset = .zero
+                                            if value.translation.width < 0 {
+                                                dragOffset.width = -1000
+                                                
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                                    moveCardToBack()
+                                                    dragOffset = .zero
+                                                }
+                                                
+                                            } else {
+                                                dragOffset.width = 1000
+                                                
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                                    moveCardToFront()
+                                                    dragOffset = .zero
+                                                }
                                             }
                                             
                                         } else {
@@ -79,8 +102,6 @@ struct VocabularyView: View {
             .navigationTitle("Newblie")
             .navigationSubtitle("Learn more about Bali Language")
         }
-        
-        // sync database → UI stack
         .onAppear {
             cardStack = vocabs
         }
@@ -94,6 +115,11 @@ struct VocabularyView: View {
         guard !cardStack.isEmpty else { return }
         let first = cardStack.removeFirst()
         cardStack.append(first)
+    }
+    func moveCardToFront() {
+        guard !cardStack.isEmpty else { return }
+        let last = cardStack.removeLast()
+        cardStack.insert(last, at: 0)
     }
 }
 

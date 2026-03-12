@@ -9,6 +9,9 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var context
+    @State private var seeded = false
+    
     var body: some View {
         
         TabView {
@@ -24,10 +27,12 @@ struct ContentView: View {
                 }
             
         }
-        
-        
-        
-        
+        .onAppear {
+            if !seeded {
+                VocabularyData.seedVocabularyIfNeeded(context: context)
+                seeded = true
+            }
+        }
     }
 }
 

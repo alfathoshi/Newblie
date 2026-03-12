@@ -15,7 +15,7 @@ struct AddWordView: View {
     @Environment(\.modelContext) private var context
     @State private var word = ""
     @State private var desc = ""
-    @State private var category = ""
+    @State private var category = "Daily"
     @State private var selectedItem: PhotosPickerItem?
     @State private var imageData: Data?
     @State private var showCamera = false
@@ -31,6 +31,12 @@ struct AddWordView: View {
                     Picker("Category", selection: $category) {
                         Text("Daily").tag("Daily")
                         Text("Direction").tag("Direction")
+                        Text("Conversation").tag("Conversation")
+                        Text("Curse").tag("Curse")
+                        Text("Greetings").tag("Greetings")
+                        Text("Polite").tag("Polite")
+                        Text("Question").tag("Question")
+                        Text("Slang").tag("Slang")
                     }
                     if let imageData,
                        let uiImage = UIImage(data: imageData) {
@@ -69,12 +75,6 @@ struct AddWordView: View {
                     }
                     .buttonStyle(.glassProminent)
                 }
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    PhotosPicker(selection: $selectedItem, matching: .images) {
-                        Image(systemName: "photo")
-                    }
-                }
                 ToolbarItem {
                     
                     PhotosPicker(selection: $selectedItem, matching: .images) {
@@ -89,17 +89,13 @@ struct AddWordView: View {
     }
     
     func saveWord() {
-        
         let vocab = Vocabulary(
             word: word,
             desc: desc,
             category: category,
-            imageName: "ask", imageData: imageData
+            imageName: category.lowercased(), imageData: imageData
         )
-        
         context.insert(vocab)
-        
-        print("Saved:", vocab.word)
     }
 }
 
