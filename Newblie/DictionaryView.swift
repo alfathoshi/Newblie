@@ -6,61 +6,83 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct DictionaryView: View {
+    @Environment(\.modelContext) private var context
+    @Query(sort: \Vocabulary.category)
+    private var vocab: [Vocabulary]
     @State private var showAddSheet = false
-    let vocab = VocabularyData.vocabulary
+    
     var body: some View {
-        let grouped = Dictionary(grouping: vocab, by: {$0.category})
+        var grouped: [String: [Vocabulary]] {
+            Dictionary(grouping: vocab, by: { $0.category })
+        }
         NavigationStack {
-            List {
-                ForEach(grouped.keys.sorted(), id: \.self) { category in
-                    Section(category) {
+            ZStack {
+                
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                Group {
+                    if vocab.isEmpty {
                         
-                        ForEach(grouped[category]!) { vocab in
+                        Text("No vocabulary yet")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        List {
                             
-                            HStack {
-                                
-                                VStack(alignment: .leading) {
-                                    Text(vocab.word)
-                                        .font(.headline)
+                            
+                            ForEach(grouped.keys.sorted(), id: \.self) { category in
+                                Section(category) {
                                     
-                                    Text(vocab.desc)
-                                        .font(.subheadline)
+                                    ForEach(grouped[category]!) { vocab in
+                                        
+                                        HStack {
+                                            
+                                            VStack(alignment: .leading) {
+                                                Text(vocab.word)
+                                                    .font(.headline)
+                                                
+                                                Text(vocab.desc)
+                                                    .font(.subheadline)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            Text(vocab.category)
+                                                .font(.caption)
+                                                .padding(.horizontal, 10)
+                                                .padding(.vertical, 4)
+                                                .background(.blue.opacity(0.2))
+                                                .foregroundStyle(.blue)
+                                                .clipShape(Capsule())
+                                        }
+                                    }
                                 }
-                                
-                                Spacer()
-                                
-                                Text(vocab.category)
-                                    .font(.caption)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 4)
-                                    .background(.blue.opacity(0.2))
-                                    .foregroundStyle(.blue)
-                                    .clipShape(Capsule())
                             }
                         }
                     }
                 }
+                .navigationTitle("Dictionary")
+                .navigationSubtitle("This is where the words gather")
+                .toolbar {
+                    Button {
+                        showAddSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+                .sheet(isPresented: $showAddSheet) {
+                    AddWordView()
+                        .presentationDetents([.medium])
+                        .presentationBackground(.white)
+                }
+                
             }
-            .navigationTitle("Dictionary")
-            .navigationSubtitle("This is where the words gather")
-                        .toolbar {
-                            Button {
-                                showAddSheet = true
-                            } label: {
-                                Image(systemName: "plus")
-                            }
-                        }
-                        .sheet(isPresented: $showAddSheet) {
-                            AddWordView()
-                                .presentationDetents([.medium])
-                                .presentationBackground(.white)
-                        }
         }
     }
 }
 
 #Preview {
-    DictionaryView()
+    DictionaryView().modelContainer(for: Vocabulary.self)
 }

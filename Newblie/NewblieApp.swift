@@ -14,5 +14,6 @@ struct NewblieApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: Vocabulary.self)
     }
 }

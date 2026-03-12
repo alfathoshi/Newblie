@@ -31,10 +31,26 @@ struct VocabularyCard: View {
                     .foregroundStyle(.blue)
                     .clipShape(Capsule())
                 
-                Image(vocab.imageName ?? "eat")
-                    .resizable()
-                    .scaledToFit()
+                if let data = vocab.imageData,
+                   let uiImage = UIImage(data: data) {
                     
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                    
+                } else if let imageName = vocab.imageName {
+                    
+                    Image(imageName)
+                        .resizable()
+                        .scaledToFit()
+                    
+                } else {
+                    
+                    Image(systemName: "photo")
+                        .font(.largeTitle)
+                        .foregroundStyle(.secondary)
+                }
+                
                 
                 
                 Text(vocab.word)
